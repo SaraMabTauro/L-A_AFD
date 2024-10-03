@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter.scrolledtext import ScrolledText
-import csv
 
 def automata_validator(input_string):
     transitions = {
@@ -64,6 +63,7 @@ def automata_validator(input_string):
                 current_value += char
 
             if state == 33:
+                # Adjusting the colon placement and sentence construction
                 if char == ':':
                     full_sentence += current_value.strip() + ": "
                     current_value = ""
@@ -114,22 +114,6 @@ def load_file():
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo leer el archivo: {e}")
 
-def export_to_csv():
-    # Abrir el cuadro de diálogo para guardar el archivo CSV
-    file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV Files", "*.csv")])
-    if file_path:
-        try:
-            # Obtener el contenido del ScrolledText
-            content = result_text.get(1.0, tk.END).strip().split('\n\n')
-            with open(file_path, mode='w', newline='', encoding='utf-8') as file:
-                writer = csv.writer(file)
-                # Escribir cada línea como una fila en el archivo CSV
-                for line in content:
-                    writer.writerow([line])
-            messagebox.showinfo("Éxito", "Contenido exportado exitosamente a CSV.")
-        except Exception as e:
-            messagebox.showerror("Error", f"No se pudo exportar el archivo: {e}")
-
 # Interfaz gráfica con Tkinter
 root = tk.Tk()
 root.title("Validador de Autómata con HTML")
@@ -142,10 +126,6 @@ load_button.pack(pady=10)
 # Área de texto para mostrar los resultados
 result_text = ScrolledText(root, wrap=tk.WORD, width=90, height=30)
 result_text.pack(padx=10, pady=10)
-
-# Botón para exportar a CSV
-export_button = tk.Button(root, text="Exportar a CSV", command=export_to_csv)
-export_button.pack(pady=10)
 
 # Ejecutar la aplicación
 root.mainloop()
