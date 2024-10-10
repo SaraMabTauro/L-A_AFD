@@ -117,7 +117,7 @@ def load_file():
 # Interfaz gráfica con Tkinter
 root = tk.Tk()
 root.title("Validador de Autómata con HTML")
-root.geometry("800x600")
+root.geometry("800x700")
 
 # Botón para cargar el archivo HTML
 load_button = tk.Button(root, text="Cargar archivo HTML", command=load_file)
@@ -126,6 +126,10 @@ load_button.pack(pady=10)
 # Área de texto para mostrar los resultados
 result_text = ScrolledText(root, wrap=tk.WORD, width=90, height=30)
 result_text.pack(padx=10, pady=10)
+
+#Boton para exportar resultado
+load_button2 = tk.Button(root, text="Exportar CSV", command=load_file)
+load_button2.pack(pady=40)
 
 # Ejecutar la aplicación
 root.mainloop()

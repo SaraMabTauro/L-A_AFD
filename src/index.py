@@ -1,7 +1,9 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter.scrolledtext import ScrolledText
+import csv
 
+# Función del validador de autómata
 def automata_validator(input_string):
     transitions = {
         1: {'<': 2},
@@ -49,9 +51,13 @@ def automata_validator(input_string):
     captured_values = []
     full_sentence = ""
     i = 0
+    line_number = 1
 
     while i < len(input_string):
         char = input_string[i]
+
+        if char == '\n':
+            line_number += 1
 
         if char in transitions[state]:
             state = transitions[state][char]
@@ -63,13 +69,12 @@ def automata_validator(input_string):
                 current_value += char
 
             if state == 33:
-                # Adjusting the colon placement and sentence construction
                 if char == ':':
                     full_sentence += current_value.strip() + ": "
                     current_value = ""
                 elif char == '.':
                     full_sentence = full_sentence.strip() + "."
-                    captured_values.append(full_sentence)
+                    captured_values.append((line_number, full_sentence.strip()))
                     full_sentence = ""
                 else:
                     full_sentence += current_value.strip() + " "
@@ -82,7 +87,7 @@ def automata_validator(input_string):
 
         elif state == 35:
             if full_sentence.strip():
-                captured_values.append(full_sentence.strip())
+                captured_values.append((line_number, full_sentence.strip()))
             full_sentence = ""
             break
 
@@ -92,39 +97,78 @@ def automata_validator(input_string):
         i += 1
 
     if full_sentence.strip():
-        captured_values.append(full_sentence.strip())
+        captured_values.append((line_number, full_sentence.strip()))
 
     return True, captured_values
 
+# Función para exportar a CSV
+def export_to_csv(captured_values):
+    file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV Files", "*.csv")])
+    if file_path:
+        try:
+            with open(file_path, 'w', newline='', encoding='utf-8') as file:
+                writer = csv.writer(file)
+                writer.writerow(["Line", "Captured Text"])
+                writer.writerows(captured_values)
+            messagebox.showinfo("Success", f"Results successfully exported to {file_path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export to CSV: {e}")
+
+# Función para validar el contenido
+def validate_content(content):
+    is_valid, captured_values = automata_validator(content)
+    if captured_values:
+        result_text.delete(1.0, tk.END)
+        result_text.insert(tk.END, "Cadena válida. Valores capturados:\n\n")
+        for line_num, value in captured_values:
+            formatted_value = f"Línea {line_num}: {value}"
+            result_text.insert(tk.END, formatted_value + '\n\n')
+
+        # Añadir botón para exportar
+        export_button = tk.Button(root, text="Exportar a CSV", command=lambda: export_to_csv(captured_values))
+        export_button.pack(pady=10)
+    else:
+        messagebox.showerror("Error", "No se capturaron valores válidos.")
+
+# Función para cargar archivo
 def load_file():
-    file_path = filedialog.askopenfilename(filetypes=[("HTML Files", "*.html")])
+    file_path = filedialog.askopenfilename(filetypes=[("HTML & TXT Files", ".html;.txt")])
     if file_path:
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
-                html_content = file.read()
-                is_valid, captured_values = automata_validator(html_content)
-                if captured_values:
-                    result_text.delete(1.0, tk.END)
-                    result_text.insert(tk.END, "Cadena válida. Valores capturados:\n\n")
-                    for value in captured_values:
-                        formatted_value = value.replace('\n', '').strip()  # Removing extra newlines and spaces
-                        result_text.insert(tk.END, formatted_value + '\n\n')
-                else:
-                    messagebox.showerror("Error", "No se capturaron valores válidos.")
+                content = file.read()
+                validate_content(content)
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo leer el archivo: {e}")
 
+# Función para validar la entrada manual
+def validate_manual_input():
+    input_content = manual_input.get(1.0, tk.END).strip()
+    if input_content:
+        validate_content(input_content)
+    else:
+        messagebox.showwarning("Advertencia", "Por favor, ingresa algún contenido para validar.")
+
 # Interfaz gráfica con Tkinter
 root = tk.Tk()
-root.title("Validador de Autómata con HTML")
-root.geometry("800x600")
+root.title("Validador de Autómata con HTML y TXT")
+root.geometry("800x700")
 
-# Botón para cargar el archivo HTML
-load_button = tk.Button(root, text="Cargar archivo HTML", command=load_file)
+# Botón para cargar archivo HTML o TXT
+load_button = tk.Button(root, text="Cargar archivo HTML/TXT", command=load_file)
 load_button.pack(pady=10)
 
+# Caja de texto para ingreso manual
+manual_input = ScrolledText(root, wrap=tk.WORD, width=90, height=10)
+manual_input.pack(padx=10, pady=10)
+manual_input.insert(tk.END, "Ingresa contenido HTML o texto aquí...")
+
+# Botón para validar el contenido manual
+validate_button = tk.Button(root, text="Validar contenido ingresado", command=validate_manual_input)
+validate_button.pack(pady=10)
+
 # Área de texto para mostrar los resultados
-result_text = ScrolledText(root, wrap=tk.WORD, width=90, height=30)
+result_text = ScrolledText(root, wrap=tk.WORD, width=90, height=20)
 result_text.pack(padx=10, pady=10)
 
 # Ejecutar la aplicación
