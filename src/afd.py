@@ -97,34 +97,53 @@ def automata_validator(input_string):
     return True, captured_values
 
 def load_file():
-    file_path = filedialog.askopenfilename(filetypes=[("HTML Files", "*.html")])
+    file_path = filedialog.askopenfilename(filetypes=[("HTML & TXT Files", "*.html;*.txt")])
     if file_path:
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
-                html_content = file.read()
-                is_valid, captured_values = automata_validator(html_content)
-                if captured_values:
-                    result_text.delete(1.0, tk.END)
-                    result_text.insert(tk.END, "Cadena válida. Valores capturados:\n\n")
-                    for value in captured_values:
-                        formatted_value = value.replace('\n', '').strip()  # Removing extra newlines and spaces
-                        result_text.insert(tk.END, formatted_value + '\n\n')
-                else:
-                    messagebox.showerror("Error", "No se capturaron valores válidos.")
+                content = file.read()
+                validate_content(content)
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo leer el archivo: {e}")
 
+def validate_content(content):
+    is_valid, captured_values = automata_validator(content)
+    if captured_values:
+        result_text.delete(1.0, tk.END)
+        result_text.insert(tk.END, "Cadena válida. Valores capturados:\n\n")
+        for value in captured_values:
+            formatted_value = value.replace('\n', '').strip()  # Eliminando saltos de línea adicionales y espacios
+            result_text.insert(tk.END, formatted_value + '\n\n')
+    else:
+        messagebox.showerror("Error", "No se capturaron valores válidos.")
+
+def validate_manual_input():
+    input_content = manual_input.get(1.0, tk.END).strip()
+    if input_content:
+        validate_content(input_content)
+    else:
+        messagebox.showwarning("Advertencia", "Por favor, ingresa algún contenido para validar.")
+
 # Interfaz gráfica con Tkinter
 root = tk.Tk()
-root.title("Validador de Autómata con HTML")
-root.geometry("800x600")
+root.title("Validador de Autómata con HTML y TXT")
+root.geometry("800x700")
 
-# Botón para cargar el archivo HTML
-load_button = tk.Button(root, text="Cargar archivo HTML", command=load_file)
+# Botón para cargar archivo HTML o TXT
+load_button = tk.Button(root, text="Cargar archivo HTML/TXT", command=load_file)
 load_button.pack(pady=10)
 
+# Caja de texto para ingreso manual
+manual_input = ScrolledText(root, wrap=tk.WORD, width=90, height=10)
+manual_input.pack(padx=10, pady=10)
+manual_input.insert(tk.END, "Ingresa contenido HTML o texto aquí...")
+
+# Botón para validar el contenido manual
+validate_button = tk.Button(root, text="Validar contenido ingresado", command=validate_manual_input)
+validate_button.pack(pady=10)
+
 # Área de texto para mostrar los resultados
-result_text = ScrolledText(root, wrap=tk.WORD, width=90, height=30)
+result_text = ScrolledText(root, wrap=tk.WORD, width=90, height=20)
 result_text.pack(padx=10, pady=10)
 
 # Ejecutar la aplicación
