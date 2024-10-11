@@ -36,6 +36,15 @@ class HtmlTagAFD:
             (31, 'n'): 32,
             (32, '>'): 33,
             (33, ':'): 34,
+            (33, ','): 34,
+            (33, 'l'): 34,
+            (33, 'o'): 34,
+            (33, 'a'): 34,
+            (34, ':'): 34,
+            (34, ','): 34,
+            (34, 'l'): 34,
+            (34, 'o'): 34,
+            (34, 'a'): 34,
             (33, ' '): 1,       
             (33, '\n'): 1,  
             (33, '\t'): 1,     
@@ -45,10 +54,8 @@ class HtmlTagAFD:
             (34, '\t'): 1,      
         }
 
-        self.saved_state = {26, 34, 35}
-
         # Transiciones para caracteres alfanuméricos
-        for char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789':
+        for char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnñopqrstuvwxyz0123456789':
             self.transitions[(16, char)] = 17
             self.transitions[(17, char)] = 18
             self.transitions[(18, char)] = 19
@@ -58,9 +65,11 @@ class HtmlTagAFD:
             self.transitions[(22, char)] = 23
 
         # Transiciones para caracteres alfabéticos
-        for char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz':
+        for char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnñopqrstuvwxyz':
             self.transitions[(25, char)] = 26
             self.transitions[(26, char)] = 26
+        
+        self.saved_state = {26, 34, 35}
 
     def validate_text(self, text):
         current_state = 1 
@@ -83,6 +92,8 @@ class HtmlTagAFD:
                 if current_state in self.saved_state:
                     extracted_text += char
                 if current_state == 27:
+                    extracted_text += ' '
+                if current_state == 35:
                     extracted_text += ' '
                 
             else:
@@ -110,7 +121,7 @@ def load_file():
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
-                validate_content(content)  # Llamar a la función de validación
+                validate_content(content)
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo leer el archivo: {e}")
 
@@ -124,7 +135,7 @@ def validate_content(content):
     if is_valid:
         result_text.insert(tk.END, "Cadena válida. Valores capturados:\n\n")
         for value, pos in zip(captured_values, positions):
-            result_text.insert(tk.END, f"Valor: {value}, Fila: {pos[0]}, Columna: {pos[1]}\n")
+            result_text.insert(tk.END, f"{value} Fila: {pos[0]}, Columna: {pos[1]}\n")
     else:
         messagebox.showinfo("Resultado", "No se encontraron valores válidos.")
         result_text.insert(tk.END, "No se encontraron valores válidos.")
