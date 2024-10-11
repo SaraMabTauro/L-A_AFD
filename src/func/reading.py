@@ -48,3 +48,4 @@ contenido_html = ""  # Variable para almacenar el contenido del archivo HTML car
 
 # Iniciar el bucle principal de Tkinter
 root.mainloop()
+
